@@ -1,7 +1,7 @@
 #include "TypeList.hpp"
 #include <gtest/gtest.h>
 #include <type_traits>
-
+#include <iostream>
 
 namespace{
 class TypeListTest: public ::testing::Test
@@ -14,6 +14,8 @@ public:
     }
 protected:
     using TEST_LIST = TypeList<char, short, int>;
+    template<int v>
+    using IC = std::integral_constant<int, v>;
 };
 
 template<typename T>
@@ -114,8 +116,33 @@ TEST_F(TypeListTest, accumulate)
 
 TEST_F(TypeListTest, insertSort)
 {
-    EXPECT_TRUE((std::is_same<sortList<TypeList<char, long long, int, short>, largerSize>, 
+    EXPECT_TRUE((std::is_same<sortList<TypeList<char, long long, int, short>, largerSize>,
                               TypeList<long long, int, short, char>
                              >::value));
 }
+
+TEST_F(TypeListTest, getFirstIndexOf)
+{
+    EXPECT_TRUE((getFirstIndexOf<char, TEST_LIST> == 0));
+    EXPECT_TRUE((getFirstIndexOf<short, TEST_LIST> == 1));
+    EXPECT_TRUE((getFirstIndexOf<int, TEST_LIST> == 2));
+    // When the target type isn't in the type list, the compilation will fail! It is type safe in meta-programming :-)
+    // EXPECT_TRUE((getFirstIndexOf<float, TEST_LIST> == 2));
+}
+
+TEST_F(TypeListTest, getLengthOf)
+{
+    EXPECT_TRUE((getLengthOf<TEST_LIST> == 3));
+    EXPECT_TRUE((getLengthOf<popFront<TEST_LIST>> == 2));
+    EXPECT_TRUE((getLengthOf<popFront<popFront<TEST_LIST>>> == 1));
+    EXPECT_TRUE((getLengthOf<TypeList<>> == 0));
+}
+
+TEST_F(TypeListTest, getIntegralList)
+{
+    EXPECT_TRUE((std::is_same<getIntegralList<int, 0, 1, 3>, 
+                              TypeList<IC<0>, IC<1>, IC<2>>
+                             >::value));
+    EXPECT_TRUE((std::is_same<getIntegralList<int, 5, 1, 1>, TypeList<IC<5>>>::value));
+    EXPECT_TRUE((std::is_same<getIntegralList<int, 5, 1, 0>, TypeList<>>::value));}
 }

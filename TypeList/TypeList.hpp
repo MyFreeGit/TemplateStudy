@@ -15,7 +15,7 @@ struct GetHeadT<TypeList<First, Rest...>>
     using Tails = TypeList<Rest...>;
 };
 
-// Specialization for empty TypeList. The Head is default void or otherwise 
+// Specialization for empty TypeList. The Head is default void or otherwise
 // compile error when use getHead or popFront
 template<>
 struct GetHeadT<TypeList<>>
@@ -94,13 +94,13 @@ template<typename First, typename... Rest>
 struct GetMaxSizeTypeT<TypeList<First, Rest...>>
 {
     using MaxSize = ifThenElse<sizeof(First) >= sizeof(typename GetMaxSizeTypeT<TypeList<Rest...>>::MaxSize),
-                               First, typename GetMaxSizeTypeT<TypeList<Rest...>>::MaxSize>; 
+                               First, typename GetMaxSizeTypeT<TypeList<Rest...>>::MaxSize>;
 };
 
 template<>
 struct GetMaxSizeTypeT<TypeList<>>
 {
-    using MaxSize = char;  
+    using MaxSize = char;
 };
 
 template<typename List>
@@ -186,7 +186,7 @@ struct TransformT;
 template<typename List, template<typename T>class MetaFunc>
 struct TransformT<List, MetaFunc, false>
 {
-    using Type = pushFront<typename TransformT<popFront<List>, MetaFunc>::Type, 
+    using Type = pushFront<typename TransformT<popFront<List>, MetaFunc>::Type,
                            MetaFunc<getHead<List>>>;
 };
 
@@ -201,14 +201,14 @@ using transform = typename TransformT<List, MetaFunc>::Type;
 
 ///////////////////////////    accumulate   /////////////////////////////////////
 
-template<typename List, template<typename T1, typename T2> class MetaFunc, 
+template<typename List, template<typename T1, typename T2> class MetaFunc,
          typename InitType, bool = isEmpty<List>::value>
 struct AccumulateT;
 
 template<typename List, template<typename T1, typename T2> class MetaFunc, typename InitType>
 struct AccumulateT<List, MetaFunc, InitType, false>
 {
-    using Type = typename AccumulateT<popFront<List>, MetaFunc, 
+    using Type = typename AccumulateT<popFront<List>, MetaFunc,
                                       MetaFunc<InitType, getHead<List>>>::Type;
 };
 
@@ -222,16 +222,16 @@ template<typename List, template<typename T1, typename T2> class MetaFunc, typen
 using accumulate = typename AccumulateT<List, MetaFunc, InitType>::Type;
 
 ///////////////////////////    insertSort   /////////////////////////////////////
-// Avoid Intantiate the T in ifThenElse when if evaluation is false. Due to template instantiation is 
+// Avoid Intantiate the T in ifThenElse when if evaluation is false. Due to template instantiation is
 // different with if statement, all template parameter are instantiated when template is instantiated!
 template<typename T>
-struct DoNotInstantiateInIfThenElse 
+struct DoNotInstantiateInIfThenElse
 {
     using Type = T;
 };
 
 // Define a metafunction to insert a item into a sorted list.
-template<typename List, typename NewItem, template<typename T1, typename T2> class Comp, 
+template<typename List, typename NewItem, template<typename T1, typename T2> class Comp,
          bool = isEmpty<List>::value>
 class InsertSortT;
 
@@ -277,16 +277,78 @@ struct SortListT<List, Comp, true>
 };
     // We can use the public to insted of using template alias in the following way:
     // template<typename List, template<typename T1, typename T2> class Comp>
-    // struct SortListT<List, Comp, false> 
+    // struct SortListT<List, Comp, false>
     //   : public InsertSortT<typename SortListT<popFront<List>, Comp>::Type, getHead<List>, Comp>
-    // { 
+    // {
     // };
 
     // template<typename List, template<typename T1, typename T2> class Comp>
-    // struct SortListT<List, Comp, true> 
-    // { 
+    // struct SortListT<List, Comp, true>
+    // {
     //     using Type = List;
     // };
 template<typename List, template<typename T1, typename T2> class Comp>
 using sortList = typename SortListT<List, Comp>::Type;
+
+///////////////////////////    getFirstIndexOf   /////////////////////////////////////
+
+template<typename T, typename List, int Index=0, bool = isEmpty<List>::value>
+struct GetFirstIndexOfT {};
+
+template<typename T, typename List, int Index>
+struct GetFirstIndexOfT<T, List, Index, false>
+{
+    constexpr static unsigned value = ifThenElse<std::is_same<T, getHead<List>>::value,
+                                                 std::integral_constant<unsigned, Index>,
+                                                 GetFirstIndexOfT<T, popFront<List>, Index + 1>
+                                                >::value;
+};
+
+template<typename T, typename List, int Index>
+struct GetFirstIndexOfT<T, List, Index, true>
+{
+    // We don't need to add a default value here to indicate the desired type isn't in typelist.
+    // Because when instantiation the empty typelist here, means the type isn't in typelist. The
+    // compilation will failed due to no value is defined. So we don't need to add a default value
+    // like runtime programming here to indicate the error. The compilation will guarantee the clinet
+    // code to get the correct value or compilation failure.
+    // So below code isn't needed here:
+    // constexpr static int value = -1
+};
+
+template<typename T, typename List>
+constexpr static unsigned getFirstIndexOf = GetFirstIndexOfT<T, List>::value;
+
+///////////////////////////    getLengthOf   /////////////////////////////////////
+
+template<typename List>
+struct GetLengthOfT{};
+
+template<typename...Types>
+struct GetLengthOfT<TypeList<Types...>>
+{
+    constexpr static std::size_t length = sizeof...(Types);
+};
+
+template<typename List>
+constexpr static std::size_t getLengthOf = GetLengthOfT<List>::length;
+
+///////////////////////////    getIntegralList   /////////////////////////////////////
+template<typename T, int Start=0, int Step=0, unsigned Count=1,
+         typename = typename std::enable_if<(Count >= 0)>::type>
+struct GetIntegralListT
+{
+    using Type = pushFront<typename GetIntegralListT<T, Start + Step, Step, Count - 1>::Type,
+                                   std::integral_constant<T, Start>>;
+};
+
+template<typename T, int Start, int Step>
+struct GetIntegralListT<T, Start, Step, 0>
+{
+    using Type = TypeList<>;
+};
+
+template<typename T, int Start, int Step, int Count>
+using getIntegralList = typename GetIntegralListT<T, Start, Step, Count>::Type;
+
 
