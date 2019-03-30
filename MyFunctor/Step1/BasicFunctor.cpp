@@ -3,7 +3,8 @@
 
 using AddFunc = int(*)(int, int);
 
-int main(int, char**) {
+int main(int, char**)
+{
     Functor f1 = AddFunctor();
     Functor f2 = normalAddFunction;
     f1(3,4);

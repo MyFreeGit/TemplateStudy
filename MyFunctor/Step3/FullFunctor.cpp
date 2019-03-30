@@ -17,7 +17,8 @@ struct AddFunctor
     }
 };
 
-int main(int, char**) {
+int main(int, char**)
+{
     Functor<int(int, int)> f1 = AddFunctor();
     Functor<int(int, int, int)> f2 = normalAddFunction;
     int start = 5;
@@ -28,5 +29,8 @@ int main(int, char**) {
     f1(3,4);
     f2(5, 6, 7);
     f3(1, 2);
-    Functor<int(void)> shall_fail = 15;
+    // The compiler fails when deduce the Functor's template arguments. The Functor
+    // internal data type isn't a int(void) type and use a bridge pattern to record the callable object. But
+    // the int(void) type gurantee the correct type is assigned to functor object!
+    //Functor<int(void)> shall_fail = 15;
 }

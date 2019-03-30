@@ -23,7 +23,8 @@ struct AddFunctor
     }
 };
 
-int main(int, char**) {
+int main(int, char**)
+{
     Functor<int(int, int)> f1 = AddFunctor();
     Functor<int(int, int, int)> f2 = normalAddFunction;
     int start = 5;
@@ -34,5 +35,4 @@ int main(int, char**) {
     f1(3,4);
     f2(5, 6, 7);
     f3(1, 2);
-    Functor<void(void)> should_fail = 15;
 }

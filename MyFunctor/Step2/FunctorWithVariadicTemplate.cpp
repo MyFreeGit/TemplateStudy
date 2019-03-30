@@ -17,7 +17,8 @@ struct UniversalFunctor<int(int, int)>
     }
 };
 
-int main(int, char**) {
+int main(int, char**)
+{
     Functor<int(int, int, int)> f1 = normalAddFunction;
     f1(5, 6, 7);
     Functor<int(int, int)> f2 = UniversalFunctor<int(int, int)>();
