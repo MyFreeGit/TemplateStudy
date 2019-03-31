@@ -1,7 +1,10 @@
 #include <gtest/gtest.h>
 #include <iostream>
+#ifdef MY_TUPLE_VERSION_2
+#include "MyTupleV2.hpp"
+#else
 #include "MyTuple.hpp"
-
+#endif
 namespace{
 class TupleUnitTest: public ::testing::Test
 {
@@ -12,8 +15,12 @@ TEST_F(TupleUnitTest, WithOneIntValue)
 {
     using MyStudy::Tuple;
     using MyStudy::getValue;
-    Tuple<int> t(5);
-    EXPECT_EQ(5, getValue<0>(t));
+    Tuple<int> tupleWithRValue(5);
+    EXPECT_EQ(5, getValue<0>(tupleWithRValue));
+    // Test Tuple with lvalue
+    int i = 10;
+    Tuple<int> tupleWithLValue(i);
+    EXPECT_EQ(10, getValue<0>(tupleWithLValue));
 }
 
 TEST_F(TupleUnitTest, WithThreeValues)
@@ -24,6 +31,8 @@ TEST_F(TupleUnitTest, WithThreeValues)
     EXPECT_EQ(5, getValue<0>(t));
     EXPECT_FLOAT_EQ(5.6, getValue<1>(t));
     EXPECT_STREQ("Hello World", getValue<2>(t).c_str());
+    int i = 10;
+    Tuple<int, float, std::string> tupleWithMixReference(i, 5.6, "Hello World");
 }
 
 TEST_F(TupleUnitTest, testMakeTuple)

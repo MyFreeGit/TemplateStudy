@@ -2,21 +2,21 @@ namespace MyStudy{
 template<typename... Types>
 class Tuple;
 
-template<typename First, typename... Rest>
-class Tuple<First, Rest...> : public Tuple<Rest...>
+template<typename Head, typename... Tails>
+class Tuple<Head, Tails...> : public Tuple<Tails...>
 {
 public:
-    First getHead() const { return head; }
-    Tuple<Rest...> getTails() const { return *this; }
-    Tuple(const First& head, const Rest&... args) : head(head), Tuple<Rest...>(args...) {}
-    Tuple(First&& head, Rest&&... args)
-        : head(std::forward<First>(head)), Tuple<Rest...>(std::forward<Rest>(args)...) {}
-    bool operator == (const Tuple<First, Rest...>& rval)
+    Head getHead() const { return head; }
+    Tuple<Tails...> getTails() const { return *this; }
+    Tuple(const Head& head, const Tails&... tails) : head(head), Tuple<Tails...>(tails...) {}
+    Tuple(Head&& head, Tails&&... tails)
+        : head(std::forward<Head>(head)), Tuple<Tails...>(std::forward<Tails>(tails)...) {}
+    bool operator == (const Tuple<Head, Tails...>& rval)
     {
         return head == rval.head && getTails() == rval.getTails();
     }
 private:
-    First head;
+    Head head;
 };
 
 template<>
