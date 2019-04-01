@@ -153,30 +153,6 @@ public:
 template<typename List, typename NewElement>
 using pushBackV2 = typename PushBackV2<List, NewElement>::Type;
 
-///////////////////////////    reverse   /////////////////////////////////////
-
-template<typename List, bool = isEmpty<List>::value>
-class ReverseT;
-
-template<typename List>
-class ReverseT<List, false>
-{
-    using Head = getHead<List>;
-public:
-    using Type = pushBack<typename ReverseT<popFront<List>>::Type, Head>;
-                      //   ^- Don't forget this because metafunction's pushBack parameter is a type
-};
-
-template<typename List>
-class ReverseT<List, true>
-{
-public:
-    using Type = List;
-};
-
-template<typename List>
-using reverse = typename ReverseT<List>::Type;
-
 ///////////////////////////    transform   /////////////////////////////////////
 
 template<typename List, template<typename T>class MetaFunc,
@@ -334,6 +310,7 @@ template<typename List>
 constexpr static std::size_t getLengthOf = GetLengthOfT<List>::length;
 
 ///////////////////////////    getIntegralList   /////////////////////////////////////
+
 template<typename T, int Start=0, int Step=0, unsigned Count=1,
          typename = typename std::enable_if<(Count >= 0)>::type>
 struct GetIntegralListT
@@ -351,4 +328,60 @@ struct GetIntegralListT<T, Start, Step, 0>
 template<typename T, int Start, int Step, int Count>
 using getIntegralList = typename GetIntegralListT<T, Start, Step, Count>::Type;
 
+///////////////////////////    reverse   /////////////////////////////////////
 
+template<typename List, bool = isEmpty<List>::value>
+class ReverseT;
+
+template<typename List>
+class ReverseT<List, false>
+{
+    using Head = getHead<List>;
+public:
+    using Type = pushBack<typename ReverseT<popFront<List>>::Type, Head>;
+                      //   ^- Don't forget this because metafunction's pushBack parameter is a type
+};
+
+template<typename List>
+class ReverseT<List, true>
+{
+public:
+    using Type = List;
+};
+
+template<typename List>
+using reverse = typename ReverseT<List>::Type;
+
+///////////////////////////    reverseV2   /////////////////////////////////////
+// You can compare those two implementation of reverse. They use different trick.
+// In this version, we generate a list that contains the integral value list with a descendent order indicating
+// the reversed TypeList's item's index. Then use the metafuction getAt to get each item from the list and generate
+// the new List. It isn't use recussion such as previous implementation.
+template<typename List, typename ConstList>
+struct GetTypeListWithIndexT{};
+
+// Here is the trick for force the compiler to performs the parameter arguement deduction by template specialization
+// In the general template definition, we define the number of template parameter of GetTypeListWithIndexT. In the
+// below the template specialization, we define another set of template parameters which need to be deduced from 
+// paramter arguement that user given. We can use this kind of trick to extract designed information from specified
+// template parameters from another template. Here is we extract the int list which encapsulate in the list which
+// metafunction "getIntegralList" generated!
+template<typename List, unsigned... Indexes>
+struct GetTypeListWithIndexT<List, TypeList<std::integral_constant<unsigned, Indexes>...>>
+{
+    using Type = TypeList<getAt<List, Indexes>...>;
+};
+
+template<typename List>
+struct ReverseTypeListT{};
+
+template<typename... Types>
+struct ReverseTypeListT<TypeList<Types...>>
+{
+    using List = TypeList<Types...>;
+    using Indexes = getIntegralList<unsigned, sizeof...(Types) - 1, -1, sizeof...(Types)>;
+    using Type = typename GetTypeListWithIndexT<List, Indexes>::Type;
+};
+
+template<typename List>
+using reverseV2 = typename ReverseTypeListT<List>::Type;

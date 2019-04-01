@@ -146,3 +146,8 @@ TEST_F(TypeListTest, getIntegralList)
     EXPECT_TRUE((std::is_same<getIntegralList<int, 5, 1, 1>, TypeList<IC<5>>>::value));
     EXPECT_TRUE((std::is_same<getIntegralList<int, 5, 1, 0>, TypeList<>>::value));}
 }
+
+TEST_F(TypeListTest, reverseV2)
+{
+    EXPECT_TRUE((std::is_same<reverseV2<TEST_LIST>, TypeList<int, short, char>>::value));
+}
