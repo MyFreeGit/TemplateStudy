@@ -9,6 +9,7 @@ file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE UT_SRC ut/*.cpp)
 
 add_executable(TupleUnitTest ${UT_SRC})
+enable_testing()
 
 set (TestTupleVersion2 TRUE)
 

@@ -11,6 +11,17 @@ class TupleUnitTest: public ::testing::Test
 protected:
 };
 
+TEST_F(TupleUnitTest, TupleMemberIsMutable)
+{
+    using MyStudy::Tuple;
+    using MyStudy::getValue;
+    Tuple<int> t(5);
+    EXPECT_EQ(5, getValue<0>(t));
+    int& l = getValue<0>(t);
+    l = 20;
+    EXPECT_EQ(20, getValue<0>(t));
+}
+
 TEST_F(TupleUnitTest, WithOneIntValue)
 {
     using MyStudy::Tuple;
@@ -21,6 +32,21 @@ TEST_F(TupleUnitTest, WithOneIntValue)
     int i = 10;
     Tuple<int> tupleWithLValue(i);
     EXPECT_EQ(10, getValue<0>(tupleWithLValue));
+    // Test Tuple with reference
+    int& r = i;
+    Tuple<int> tupleWithReference(i);
+    r = 20;
+    EXPECT_EQ(10, getValue<0>(tupleWithReference)); // Not changed inside the Tuple
+}
+
+TEST_F(TupleUnitTest, TupleMovableContructor)
+{
+    using MyStudy::Tuple;
+    using MyStudy::getValue;
+    std::string str = "Hello World";
+    Tuple<std::string> t(std::move(str));
+    EXPECT_STREQ("Hello World", getValue<0>(t).c_str());
+    EXPECT_EQ(str.length(), 0);
 }
 
 TEST_F(TupleUnitTest, WithThreeValues)

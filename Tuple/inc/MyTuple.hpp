@@ -6,8 +6,12 @@ template<typename Head, typename... Tails>
 class Tuple<Head, Tails...> : public Tuple<Tails...>
 {
 public:
-    Head getHead() const { return head; }
-    Tuple<Tails...> getTails() const { return *this; }
+    const Head& getHead() const { return head; }
+    Head& getHead() { return head; }
+
+    const Tuple<Tails...>& getTails() const { return *this; }
+    Tuple<Tails...>& getTails() { return *this; }
+
     Tuple(const Head& head, const Tails&... tails) : head(head), Tuple<Tails...>(tails...) {}
     Tuple(Head&& head, Tails&&... tails)
         : head(std::forward<Head>(head)), Tuple<Tails...>(std::forward<Tails>(tails)...) {}
@@ -16,7 +20,8 @@ public:
         return head == rval.head && getTails() == rval.getTails();
     }
 private:
-    Head head;
+    // Using std::decay_t to remove the reference or char[] to char*
+    std::decay_t<Head> head;
 };
 
 template<>
@@ -34,11 +39,16 @@ template<int Index>
 struct GetAtT
 {
     template<typename... Types>
-    static auto value(const Tuple<Types...>& tuple)
+    static const auto& value(const Tuple<Types...>& tuple)
     {
         return GetAtT<Index - 1>::value(tuple.getTails());
     }
-};
+
+    template<typename... Types>
+    static auto& value(Tuple<Types...>& tuple)
+    {
+        return GetAtT<Index - 1>::value(tuple.getTails());
+    }};
 
 template<>
 struct GetAtT<0>
@@ -48,10 +58,22 @@ struct GetAtT<0>
     {
         return tuple.getHead();
     }
+
+    template<typename... Types>
+    static auto& value(Tuple<Types...>& tuple)
+    {
+        return tuple.getHead();
+    }
 };
 
 template<int Index, typename... Types>
-auto getValue(const Tuple<Types...>& tuple)
+const auto& getValue(const Tuple<Types...>& tuple)
+{
+    return GetAtT<Index>::value(tuple);
+}
+
+template<int Index, typename... Types>
+auto& getValue(Tuple<Types...>& tuple)
 {
     return GetAtT<Index>::value(tuple);
 }
