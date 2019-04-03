@@ -3,7 +3,7 @@ template<typename... Types>
 class Tuple;
 
 template<typename Head, typename... Tails>
-class Tuple<Head, Tails...> : public Tuple<Tails...>
+class Tuple<Head, Tails...> : private Tuple<Tails...>
 {
 public:
     const Head& getHead() const { return head; }
@@ -15,7 +15,11 @@ public:
     Tuple(const Head& head, const Tails&... tails) : head(head), Tuple<Tails...>(tails...) {}
     Tuple(Head&& head, Tails&&... tails)
         : head(std::forward<Head>(head)), Tuple<Tails...>(std::forward<Tails>(tails)...) {}
-    bool operator == (const Tuple<Head, Tails...>& rval)
+    Tuple(const Tuple<Head, Tails...>& tuple) : head(tuple.getHead()), Tuple<Tails...>(tuple.getTails()) {}
+    Tuple(Tuple<Head, Tails...>&& tuple) : head(std::move(tuple.getHead())), 
+                                           Tuple<Tails...>(std::move(tuple.getTails())) {}
+
+    bool operator == (const Tuple<Head, Tails...>& rval) const
     {
         return head == rval.head && getTails() == rval.getTails();
     }
@@ -29,7 +33,7 @@ class Tuple<>
 {
 public:
     // Empty tuple is equal to eachother
-    bool operator == (const Tuple<>& rval)
+    bool operator == (const Tuple<>& rval) const
     {
         return true;
     }

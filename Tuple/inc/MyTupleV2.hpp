@@ -1,3 +1,4 @@
+#include <type_traits>
 /*
 The version Tuple use more technical to improve the performance of the tuple.
 */
@@ -6,7 +7,7 @@ template<typename... Types>
 class Tuple;
 
 // Generic template
-template<unsigned N, typename T, bool = std::is_class<T>::value && std::is_final<T>::value>
+template<unsigned N, typename T, bool = std::is_class<T>::value && !std::is_final<T>::value && std::is_empty<T>::value>
 class TupleImpl;
 
 // Use TupleImpl as base class for Tuple to wrapper the data value. We
@@ -43,16 +44,20 @@ template<typename Head, typename... Tails>
 class Tuple<Head, Tails...> : private TupleImpl<sizeof...(Tails), Head>,  private Tuple<Tails...>
 {
 public:
-    Tuple<Tails...> getTails() const { return *this; }
-
     // Constructor for LValue reference
     Tuple(const Head& head, const Tails&... tails) : HEAD(head), Tuple<Tails...>(tails...) {}
     // Constructor for RValue reference
     Tuple(Head&& head, Tails&&... tails)
         : HEAD(std::forward<std::decay_t<Head>>(head)), Tuple<Tails...>(std::forward<Tails>(tails)...) {}
+    // Copy Contructor
+    Tuple(const Tuple<Head, Tails...>& tuple) : HEAD(tuple.getHead()), TAILS(tuple.getTails()) {}
+    // Move Contructor( Need the getHead and getTails return a mutable reference!)
+    Tuple(Tuple<Head, Tails...>&& tuple) : HEAD(std::move(tuple.getHead())), 
+                                           TAILS(std::move(tuple.getTails())) {}
 
-    bool operator == (const Tuple<Head, Tails...>& rval)
+    bool operator == (const Tuple<Head, Tails...>& rval) const
     {
+        // Need the getHead and getTails return a constant reference in the const == operator function
         return getHead() == rval.getHead() && getTails() == rval.getTails();
     }
 
@@ -64,8 +69,15 @@ public:
     friend auto& getValue(Tuple<Types...>& tuple);
 private:
     using HEAD = TupleImpl<sizeof...(Tails), std::decay_t<Head>>;
-    Head getHead() const { return dynamic_cast<const HEAD *>(this)->getValue(); }
-    Head getHead() { return dynamic_cast<HEAD *>(this)->getValue(); }
+    using TAILS = Tuple<Tails...>;
+
+    // Need in == operator and getValue (constant version)
+    const Head& getHead() const { return dynamic_cast<const HEAD *>(this)->getValue(); }
+    // Need in move constructor and getValue (mutable version)
+    Head& getHead() { return dynamic_cast<HEAD *>(this)->getValue(); }
+
+    const TAILS& getTails() const { return dynamic_cast<const TAILS&>(*this); }
+    TAILS& getTails() {return *this; }
 };
 
 template<>
@@ -73,7 +85,7 @@ class Tuple<>
 {
 public:
     // Empty tuple is equal to eachother
-    bool operator == (const Tuple<>& rval)
+    bool operator == (const Tuple<>& rval) const
     {
         return true;
     }

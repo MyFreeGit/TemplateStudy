@@ -39,6 +39,53 @@ TEST_F(TupleUnitTest, WithOneIntValue)
     EXPECT_EQ(10, getValue<0>(tupleWithReference)); // Not changed inside the Tuple
 }
 
+TEST_F(TupleUnitTest, CopyConstructor)
+{
+    using MyStudy::Tuple;
+    using MyStudy::getValue;
+    using MyStudy::makeTuple;
+    auto t = makeTuple(5, 5.6, std::string("Hello World"));
+    Tuple<int, double, std::string> t2 = t;
+    EXPECT_EQ(5, getValue<0>(t));
+    EXPECT_FLOAT_EQ(5.6, getValue<1>(t));
+    EXPECT_STREQ("Hello World", getValue<2>(t).c_str());
+
+    EXPECT_EQ(5, getValue<0>(t2));
+    EXPECT_FLOAT_EQ(5.6, getValue<1>(t2));
+    EXPECT_STREQ("Hello World", getValue<2>(t2).c_str());
+}
+
+TEST_F(TupleUnitTest, MoveConstructor)
+{
+    using MyStudy::Tuple;
+    using MyStudy::getValue;
+    using MyStudy::makeTuple;
+    auto t = makeTuple(5, 5.6, std::string("Hello World"));
+    Tuple<int, double, std::string> t2 = std::move(t);
+    EXPECT_EQ(5, getValue<0>(t));
+    EXPECT_FLOAT_EQ(5.6, getValue<1>(t));
+    EXPECT_EQ(getValue<2>(t).length(), 0);
+
+    EXPECT_EQ(5, getValue<0>(t2));
+    EXPECT_FLOAT_EQ(5.6, getValue<1>(t2));
+    EXPECT_STREQ("Hello World", getValue<2>(t2).c_str());
+}
+
+TEST_F(TupleUnitTest, EBCOImprovments)
+{
+    using MyStudy::Tuple;
+    struct E1{};
+    struct E2{};
+    struct E3 final {};
+    Tuple<int, E1, E2> t1(10, E1(), E2());
+    EXPECT_EQ(sizeof(t1), sizeof(int));
+    Tuple<int, E1, E3> t2(10, E1(), E3());
+     // E3 is final cannot be derived. So the size of t2 is bigger than int. But E3 will cost more space than sizeof(E3).
+     // The cpp compiler will generate 1 byte for empty class so the sizeof(E3)==1. But due to alignment reason, E3 member 
+     // will cost more than 1 byte.
+    EXPECT_GT(sizeof(t2), sizeof(int));
+}
+
 TEST_F(TupleUnitTest, TupleMovableContructor)
 {
     using MyStudy::Tuple;
@@ -81,8 +128,6 @@ TEST_F(TupleUnitTest, testEqualOperator)
     auto t3 = makeTuple(6, 5.5, std::string("A"));
     EXPECT_TRUE(t1 == t2);
     EXPECT_FALSE(t1 == t3);
-    auto t4 = t1.getTails();
-    EXPECT_TRUE(t4 == makeTuple(5.5, std::string("Hello")));
     //auto t4 = makeTuple(7, std::string("A"), 7.8);
     // t1 == t4 // This cannot be compiled! (Due to t1 and t4 are different data type!)
 }
