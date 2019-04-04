@@ -79,11 +79,14 @@ TEST_F(TupleUnitTest, EBCOImprovments)
     struct E3 final {};
     Tuple<int, E1, E2> t1(10, E1(), E2());
     EXPECT_EQ(sizeof(t1), sizeof(int));
+
     Tuple<int, E1, E3> t2(10, E1(), E3());
-     // E3 is final cannot be derived. So the size of t2 is bigger than int. But E3 will cost more space than sizeof(E3).
-     // The cpp compiler will generate 1 byte for empty class so the sizeof(E3)==1. But due to alignment reason, E3 member 
-     // will cost more than 1 byte.
-    EXPECT_GT(sizeof(t2), sizeof(int));
+    //Empty class only cost 1 byte space.
+    EXPECT_EQ((std::alignment_of<E3>()), 1);
+    // E3 is final cannot be derived. So the size of t2 is total space that is needed for int and E3. Due to the
+    // CPP alignment, the member data of E3 needs to be aligned with int, so the total size of t2 is 4 * 2.
+    // Compare to t1, the EBCO can save the space that required by alignment when the member data's type is empty class.
+    EXPECT_EQ(sizeof(t2),  (std::alignment_of<Tuple<int, E1, E3>>() * 2));
 }
 
 TEST_F(TupleUnitTest, TupleMovableContructor)
