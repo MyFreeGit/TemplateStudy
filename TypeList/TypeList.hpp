@@ -312,7 +312,7 @@ constexpr static std::size_t getLengthOf = GetLengthOfT<List>::length;
 ///////////////////////////    getIntegralList   /////////////////////////////////////
 
 template<typename T, int Start=0, int Step=0, unsigned Count=1,
-         typename = typename std::enable_if<(Count >= 0)>::type>
+         typename = std::enable_if<(Count >= 0)>>
 struct GetIntegralListT
 {
     using Type = pushFront<typename GetIntegralListT<T, Start + Step, Step, Count - 1>::Type,
@@ -360,10 +360,10 @@ using reverse = typename ReverseT<List>::Type;
 template<typename List, typename ConstList>
 struct GetTypeListWithIndexT{};
 
-// Here is the trick for force the compiler to performs the parameter arguement deduction by template specialization
+// Here is the trick for force the compiler to performs the parameter argument deduction by template specialization
 // In the general template definition, we define the number of template parameter of GetTypeListWithIndexT. In the
 // below the template specialization, we define another set of template parameters which need to be deduced from 
-// paramter arguement that user given. We can use this kind of trick to extract designed information from specified
+// paramter argument that user given. We can use this kind of trick to extract designed information from specified
 // template parameters from another template. Here is we extract the int list which encapsulate in the list which
 // metafunction "getIntegralList" generated!
 template<typename List, unsigned... Indexes>
@@ -385,3 +385,54 @@ struct ReverseTypeListT<TypeList<Types...>>
 
 template<typename List>
 using reverseV2 = typename ReverseTypeListT<List>::Type;
+
+///////////////////////////    findCompatibleType   /////////////////////////////////////
+// To find a type in the first type which the argument T is same with or can be converted to
+// If the type can be converted to and the same are all found, the same type's index is prefered.
+// If no type can be found, the compilation is stopped by static assert.
+template<int Index>
+struct FindConvertableWrapperT
+{
+    constexpr static int findConvertable = Index;
+};
+
+template<typename T, typename List, int Index=0, bool = isEmpty<List>::value>
+struct FindCompatibleTypeT;
+
+template<typename T, typename List, int Index>
+struct FindCompatibleTypeT<T, List, Index, false>
+{
+    // Two same type are always convertable. So check the TypeList contains same type first.
+    constexpr static int value = ifThenElse<std::is_same<T, getHead<List>>::value,
+                                            std::integral_constant<int, Index>,
+                                            FindCompatibleTypeT<T, popFront<List>, Index + 1>
+                                           >::value;
+    // Only to find the convertable type when the same type isn't found
+    constexpr static int findConvertable = 
+                    ifThenElse<std::is_convertible<T, getHead<List>>::value && value == -1,
+                               FindConvertableWrapperT<Index>,
+                               FindCompatibleTypeT<T, popFront<List>, Index + 1>
+                              >::findConvertable;
+};
+
+template<typename T, typename List, int Index>
+struct FindCompatibleTypeT<T, List, Index, true>
+{
+    constexpr static int value = -1;
+    constexpr static int findConvertable = -1;
+};
+
+template<typename T, typename List>
+constexpr static int _find_same = FindCompatibleTypeT<T, List>::value;
+
+template<typename T, typename List>
+constexpr static int _find_convertable = FindCompatibleTypeT<T, List>::findConvertable;
+
+template<typename T, typename List>
+constexpr int findCompatibleType() 
+{
+    constexpr int s = _find_same<T, List>;
+    constexpr int c = _find_convertable<T, List>;
+    static_assert(s != -1 || c != -1, "Cannot find compatible Type!");
+    return (s == -1) ? c : s; 
+};

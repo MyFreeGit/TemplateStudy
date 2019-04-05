@@ -144,10 +144,24 @@ TEST_F(TypeListTest, getIntegralList)
                               TypeList<IC<0>, IC<1>, IC<2>>
                              >::value));
     EXPECT_TRUE((std::is_same<getIntegralList<int, 5, 1, 1>, TypeList<IC<5>>>::value));
-    EXPECT_TRUE((std::is_same<getIntegralList<int, 5, 1, 0>, TypeList<>>::value));}
+    EXPECT_TRUE((std::is_same<getIntegralList<int, 5, 1, 0>, TypeList<>>::value));
 }
 
 TEST_F(TypeListTest, reverseV2)
 {
     EXPECT_TRUE((std::is_same<reverseV2<TEST_LIST>, TypeList<int, short, char>>::value));
 }
+
+TEST_F(TypeListTest, findCompatibleType)
+{
+    EXPECT_EQ((findCompatibleType<char, TEST_LIST>()), 0);
+    EXPECT_EQ((findCompatibleType<short, TEST_LIST>()), 1);
+    EXPECT_EQ((findCompatibleType<int, TEST_LIST>()), 2);
+    // Check the first convertable type can be found:
+    EXPECT_EQ((findCompatibleType<int, TypeList<float>>()), 0);
+    EXPECT_EQ((findCompatibleType<int, TypeList<std::string, float, double>>()), 1);
+    EXPECT_EQ((findCompatibleType<int, TypeList<int, float>>()), 0);
+    EXPECT_EQ((findCompatibleType<int, TypeList<float, int>>()), 1);
+    EXPECT_EQ((findCompatibleType<int, TypeList<float, double>>()), 0);
+}
+}//namespace
