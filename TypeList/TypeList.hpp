@@ -1,5 +1,5 @@
 #include <utility>
-
+namespace MyStudy{
 // Definition for TypeList
 template<typename... Types>
 class TypeList;
@@ -32,38 +32,38 @@ using popFront = typename GetHeadT<List>::Tails;
 
 ///////////////////////////    pushFront    /////////////////////////////////////
 
-template<typename List, typename NewElements>
+template<typename NewElement, typename List>
 struct PushFrontT;
 
-template<typename... Elements, typename NewElement>
-struct PushFrontT<TypeList<Elements...>, NewElement>
+template<typename NewElement, typename... Elements>
+struct PushFrontT<NewElement, TypeList<Elements...>>
 {
     using Type = TypeList<NewElement, Elements...>;
 };
 
-template<typename List, typename NewElement>
-using pushFront = typename PushFrontT<List, NewElement>::Type;
+template<typename NewElement, typename List>
+using pushFront = typename PushFrontT<NewElement, List>::Type;
 
 ///////////////////////////    getAt    /////////////////////////////////////
 
 using UINT = unsigned int;
-template<typename List, UINT index>
+template<UINT index, typename List>
 struct GetAtT;
 
-template<typename First, typename... Rest, UINT index>
-struct GetAtT<TypeList<First, Rest...>, index>
+template<UINT index, typename First, typename... Rest>
+struct GetAtT<index, TypeList<First, Rest...>>
 {
-    using Head = typename GetAtT<TypeList<Rest...>, index - 1>::Head;
+    using Head = typename GetAtT<index - 1, TypeList<Rest...>>::Head;
 };
 
 template<typename First, typename... Rest>
-struct GetAtT<TypeList<First, Rest...>, 0>
+struct GetAtT<0, TypeList<First, Rest...>>
 {
     using Head = First;
 };
 
-template<typename List, UINT index>
-using getAt = typename GetAtT<List, index>::Head;
+template<UINT index, typename List>
+using getAt = typename GetAtT<index, List>::Head;
 
 ///////////////////////////    ifThenElse    /////////////////////////////////////
 
@@ -116,42 +116,42 @@ class isEmpty<TypeList<>> : public std::true_type {};
 
 ///////////////////////////    pushBack    /////////////////////////////////////
 
-template<typename List, typename NewElement>
+template<typename NewElement, typename List>
 struct PushBackT;
 
-template<typename... Elements, typename NewElement>
-struct PushBackT<TypeList<Elements...>, NewElement>
+template<typename NewElement, typename... Elements>
+struct PushBackT<NewElement, TypeList<Elements...>>
 {
     using Type = TypeList<Elements..., NewElement>;
 };
 
-template<typename List, typename NewElement>
-using pushBack = typename PushBackT<List, NewElement>::Type;
+template<typename NewElement, typename List>
+using pushBack = typename PushBackT<NewElement, List>::Type;
 
 ///////////////////////////    pushBack(Method Two)   /////////////////////////////////////
 
-template<typename List, typename NewElement, bool = isEmpty<List>::value>
+template<typename NewElement, typename List, bool = isEmpty<List>::value>
 class PushBackV2;
 
-template<typename List, typename NewElement>
-class PushBackV2<List, NewElement, false>
+template<typename NewElement, typename List>
+class PushBackV2<NewElement, List, false>
 {
     using Head = getHead<List>;
     using Tail = popFront<List>;
-    using NewTail = typename PushBackV2<Tail, NewElement>::Type;
+    using NewTail = typename PushBackV2<NewElement, Tail>::Type;
 public:
-    using Type = pushFront<NewTail, Head>;
+    using Type = pushFront<Head, NewTail>;
 };
 
-template<typename List, typename NewElement>
-class PushBackV2<List, NewElement, true>
+template<typename NewElement, typename List>
+class PushBackV2<NewElement, List, true>
 {
 public:
-    using Type = pushFront<List, NewElement>;
+    using Type = pushFront<NewElement, List>;
 };
 
-template<typename List, typename NewElement>
-using pushBackV2 = typename PushBackV2<List, NewElement>::Type;
+template<typename NewElement, typename List>
+using pushBackV2 = typename PushBackV2<NewElement, List>::Type;
 
 ///////////////////////////    transform   /////////////////////////////////////
 
@@ -162,8 +162,8 @@ struct TransformT;
 template<typename List, template<typename T>class MetaFunc>
 struct TransformT<List, MetaFunc, false>
 {
-    using Type = pushFront<typename TransformT<popFront<List>, MetaFunc>::Type,
-                           MetaFunc<getHead<List>>>;
+    using Type = pushFront<MetaFunc<getHead<List>>,
+                           typename TransformT<popFront<List>, MetaFunc>::Type>;
 };
 
 template<typename List, template<typename T>class MetaFunc>
@@ -185,7 +185,7 @@ template<typename List, template<typename T1, typename T2> class MetaFunc, typen
 struct AccumulateT<List, MetaFunc, InitType, false>
 {
     using Type = typename AccumulateT<popFront<List>, MetaFunc,
-                                      MetaFunc<InitType, getHead<List>>>::Type;
+                                      MetaFunc<getHead<List>, InitType>>::Type;
 };
 
 template<typename List, template<typename T1, typename T2> class MetaFunc, typename InitType>
@@ -223,14 +223,14 @@ class InsertSortT<List, NewItem, Comp, false>
                                getHead<List> // Insert the NewItem into tail and head is List's head
                               >;
 public:
-    using Type = pushFront<NewTail, NewHead>;
+    using Type = pushFront<NewHead, NewTail>;
 };
 
 template<typename List, typename NewItem, template<typename T1, typename T2> class Comp>
 class InsertSortT<List, NewItem, Comp, true>
 {
 public:
-    using Type = pushFront<List, NewItem>;
+    using Type = pushFront<NewItem, List>;
 };
 
 template<typename List, typename NewItem, template<typename T1, typename T2> class Comp>
@@ -315,8 +315,8 @@ template<typename T, int Start=0, int Step=0, unsigned Count=1,
          typename = std::enable_if<(Count >= 0)>>
 struct GetIntegralListT
 {
-    using Type = pushFront<typename GetIntegralListT<T, Start + Step, Step, Count - 1>::Type,
-                                   std::integral_constant<T, Start>>;
+    using Type = pushFront<std::integral_constant<T, Start>,
+                           typename GetIntegralListT<T, Start + Step, Step, Count - 1>::Type>;
 };
 
 template<typename T, int Start, int Step>
@@ -338,8 +338,8 @@ class ReverseT<List, false>
 {
     using Head = getHead<List>;
 public:
-    using Type = pushBack<typename ReverseT<popFront<List>>::Type, Head>;
-                      //   ^- Don't forget this because metafunction's pushBack parameter is a type
+    using Type = pushBack<Head, typename ReverseT<popFront<List>>::Type>;
+                            //   ^- Don't forget this because metafunction's pushBack parameter is a type
 };
 
 template<typename List>
@@ -369,7 +369,7 @@ struct GetTypeListWithIndexT{};
 template<typename List, unsigned... Indexes>
 struct GetTypeListWithIndexT<List, TypeList<std::integral_constant<unsigned, Indexes>...>>
 {
-    using Type = TypeList<getAt<List, Indexes>...>;
+    using Type = TypeList<getAt<Indexes, List>...>;
 };
 
 template<typename List>
@@ -436,3 +436,4 @@ constexpr int findCompatibleType()
     static_assert(s != -1 || c != -1, "Cannot find compatible Type!");
     return (s == -1) ? c : s; 
 };
+}//namespace MyStudy

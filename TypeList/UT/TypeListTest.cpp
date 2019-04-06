@@ -4,6 +4,7 @@
 #include <iostream>
 
 namespace{
+using namespace MyStudy;
 class TypeListTest: public ::testing::Test
 {
 public:
@@ -54,15 +55,15 @@ TEST_F(TypeListTest, popFront)
 
 TEST_F(TypeListTest, pushFront)
 {
-    EXPECT_TRUE((std::is_same<pushFront<TEST_LIST, float>, TypeList<float, char, short, int>>::value));
-    EXPECT_TRUE((std::is_same<pushFront<popFront<TEST_LIST>, float>, TypeList<float, short, int>>::value));
+    EXPECT_TRUE((std::is_same<pushFront<float, TEST_LIST>, TypeList<float, char, short, int>>::value));
+    EXPECT_TRUE((std::is_same<pushFront<float, popFront<TEST_LIST>>, TypeList<float, short, int>>::value));
 }
 
 TEST_F(TypeListTest, getAt)
 {
-    EXPECT_TRUE((std::is_same<getAt<TEST_LIST, 0>, char>::value));
-    EXPECT_TRUE((std::is_same<getAt<TEST_LIST, 1>, short>::value));
-    EXPECT_TRUE((std::is_same<getAt<TEST_LIST, 2>, int>::value));
+    EXPECT_TRUE((std::is_same<getAt<0, TEST_LIST>, char>::value));
+    EXPECT_TRUE((std::is_same<getAt<1, TEST_LIST>, short>::value));
+    EXPECT_TRUE((std::is_same<getAt<2, TEST_LIST>, int>::value));
 }
 
 TEST_F(TypeListTest, ifThenElse)
@@ -86,14 +87,14 @@ TEST_F(TypeListTest, isEmpty)
 
 TEST_F(TypeListTest, pushBack)
 {
-    EXPECT_TRUE((std::is_same<pushBack<TypeList<>, int>, TypeList<int>>::value));
-    EXPECT_TRUE((std::is_same<pushBack<TypeList<char>, int>, TypeList<char, int>>::value));
+    EXPECT_TRUE((std::is_same<pushBack<int, TypeList<>>, TypeList<int>>::value));
+    EXPECT_TRUE((std::is_same<pushBack<int, TypeList<char>>, TypeList<char, int>>::value));
 }
 
 TEST_F(TypeListTest, pushBackV2)
 {
-    EXPECT_TRUE((std::is_same<pushBackV2<TypeList<>, int>, TypeList<int>>::value));
-    EXPECT_TRUE((std::is_same<pushBackV2<TypeList<char>, int>, TypeList<char, int>>::value));
+    EXPECT_TRUE((std::is_same<pushBackV2<int, TypeList<>>, TypeList<int>>::value));
+    EXPECT_TRUE((std::is_same<pushBackV2<int, TypeList<char>>, TypeList<char, int>>::value));
 }
 
 TEST_F(TypeListTest, reverse)
