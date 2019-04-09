@@ -46,7 +46,7 @@ template<typename T, typename... Types>
 class VariantSelector
 {
 public:
-    bool destory() 
+    bool destory()
     {
         if(typeIndex == getDerived()->getActiveTypeIndex())
         {
@@ -72,7 +72,7 @@ public:
     using Self = Variant<Types...>;
 
     template<typename T>
-    constexpr explicit Variant(const T& v) : Buffer{} 
+    constexpr explicit Variant(const T& v) : Buffer{}
     {
         this->setActiveValue(v);
     }
@@ -86,16 +86,28 @@ public:
     template<typename T>
     constexpr Self& operator = (const T& v)
     {
-        destroy(); // Call object's destructor in buffer
-        this->setActiveValue(v);
+        if(VariantSelector<T, Types...>::typeIndex == this->getActiveTypeIndex())
+        {
+            // Assign a new value to current value type, no need to call destructor and constructor, just assignment.
+            this->template getValue<T>() = v;
+        } else {
+            destroy(); // Call object's destructor in buffer
+            this->setActiveValue(v);
+        }
         return *this;
     }
 
     template<typename T>
     constexpr Self& operator = (T&& v)
     {
-        destroy(); // Call object's destructor in buffer
-        this->setActiveValue(std::forward<std::decay_t<T>>(v));
+        using U = std::decay_t<T>;
+        if(VariantSelector<U, Types...>::typeIndex == this->getActiveTypeIndex())
+        {
+            this->template getValue<U>() = std::move(v);
+        } else {
+            destroy(); // Call object's destructor in buffer
+            this->setActiveValue(std::forward<U>(v));
+        }
         return *this;
     }
 
@@ -115,7 +127,7 @@ public:
     // design allow variant can be modifid in runtime so the operator == is left being unimplemented.
     // bool operator == (const Self& v) {}
 
-    ~Variant() 
+    ~Variant()
     {
 
     }
@@ -140,9 +152,10 @@ private:
     template<typename T>
     void setActiveValue(T&& v)
     {
+        using U = std::decay_t<T>;
         this->setActiveTypeIndex(getFirstIndexOf<T, TypeList<Types...>>);
         // Call the T's move constructor on internal buffer
-        new(this->getRawBuffer())T(std::move(v));
+        new(this->getRawBuffer())U(std::move(v));
     }
 
     template<typename T>
@@ -164,7 +177,7 @@ private:
     {
         using Selector = VariantSelector<T, Types...>;
         Selector& s = dynamic_cast<Selector&>(*this);
-        if(Selector::typeIndex != this->getActiveTypeIndex())
+        if(VariantSelector<T, Types...>::typeIndex != this->getActiveTypeIndex())
         {
             std::stringstream ss;
             ss << "typeIndex = " << Selector::typeIndex << "; activeTypeIndex = " << this->getActiveTypeIndex();

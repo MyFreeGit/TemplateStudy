@@ -50,9 +50,14 @@ TEST_F(VariantTest, assignment)
     EXPECT_FLOAT_EQ(getValue<float>(v), 3.14f);
     EXPECT_THROW({getValue<int>(v);}, ::MyStudy::DataNotInBuffer);
 
+    // Move Assignment
     std::string s = "Hello World";
     v = std::move(s);
     EXPECT_TRUE(getValue<2>(v) == "Hello World");
     EXPECT_TRUE(s.empty());
+
+    const int i = 10;
+    v = i;
+    EXPECT_EQ(getValue<0>(v), 10);
 }
 }
