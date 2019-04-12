@@ -60,9 +60,9 @@ void checkTemplateConstReferenceAndParamType(const T& param)
 void showInputs()
 {
     cout << "int i = 10;" << endl
-         << "int& ri = i;" << endl
+         << "int& ir = i;" << endl
          << "const int ci = 10;" << endl
-         << "const int& cri = ci;" << endl;
+         << "const int& cir = ci;" << endl;
 }
 
 // show type of variable's type which is defined by:
@@ -70,9 +70,9 @@ void showInputs()
 void showAutoDeductionResult()
 {
     int i = 10;
-    int& ri = i;
+    int& ir = i;
     const int ci = 10;
-    const int& cri = ci;
+    const int& cir = ci;
 
     cout << "auto param = i;   // ";
     checkAutoDecduction(i);
@@ -80,10 +80,10 @@ void showAutoDeductionResult()
     checkAutoDecduction(10);
     cout << "auto param = ci;  // ";
     checkAutoDecduction(ci);
-    cout << "auto param = ri;  // ";
-    checkAutoDecduction(ri);
-    cout << "auto param = cri; // ";
-    checkAutoDecduction(cri);
+    cout << "auto param = ir;  // ";
+    checkAutoDecduction(ir);
+    cout << "auto param = cir; // ";
+    checkAutoDecduction(cir);
 }
 
 // show type of variable's type which is defined by:
@@ -91,9 +91,9 @@ void showAutoDeductionResult()
 void showConstAutoDeductionResult()
 {
     int i = 10;
-    int& ri = i;
+    int& ir = i;
     const int ci = 10;
-    const int& cri = ci;
+    const int& cir = ci;
 
     cout << "const auto param = i;   // ";
     checkConstAutoDecduction(i);
@@ -101,10 +101,10 @@ void showConstAutoDeductionResult()
     checkConstAutoDecduction(10);
     cout << "const auto param = ci;  // ";
     checkConstAutoDecduction(ci);
-    cout << "const auto param = ri;  // ";
-    checkConstAutoDecduction(ri);
-    cout << "const auto param = cri; // ";
-    checkConstAutoDecduction(cri);
+    cout << "const auto param = ir;  // ";
+    checkConstAutoDecduction(ir);
+    cout << "const auto param = cir; // ";
+    checkConstAutoDecduction(cir);
 }
 
 // show type of variable's type which is defined by:
@@ -112,9 +112,9 @@ void showConstAutoDeductionResult()
 void showAutoReferenceDecductionResult()
 {
     int i = 10;
-    int& ri = i;
+    int& ir = i;
     const int ci = 10;
-    const int& cri = ci;
+    const int& cir = ci;
 
     cout << "auto& param = i;   // ";
     checkAutoReferenceDecduction(i);
@@ -122,10 +122,10 @@ void showAutoReferenceDecductionResult()
     cout << "auto& param = 10;  // compiling will fail here" << endl;
     cout << "auto& param = ci;  // ";
     checkAutoReferenceDecduction(ci);
-    cout << "auto& param = ri;  // ";
-    checkAutoReferenceDecduction(ri);
-    cout << "auto& param = cri; // ";
-    checkAutoReferenceDecduction(cri);
+    cout << "auto& param = ir;  // ";
+    checkAutoReferenceDecduction(ir);
+    cout << "auto& param = cir; // ";
+    checkAutoReferenceDecduction(cir);
 }
 
 // show type of variable's type which is defined by:
@@ -133,9 +133,9 @@ void showAutoReferenceDecductionResult()
 void showConstAutoReferenceDecductionResult()
 {
     int i = 10;
-    int& ri = i;
+    int& ir = i;
     const int ci = 10;
-    const int& cri = ci;
+    const int& cir = ci;
 
     showInputs();
     cout << "const auto& param = i;   // ";
@@ -144,18 +144,18 @@ void showConstAutoReferenceDecductionResult()
     checkConstAutoReferenceDecduction(10);
     cout << "const auto& param = ci;  // ";
     checkConstAutoReferenceDecduction(ci);
-    cout << "const auto& param = ri;  // ";
-    checkConstAutoReferenceDecduction(ri);
-    cout << "const auto& param = cri; // ";
-    checkConstAutoReferenceDecduction(cri);
+    cout << "const auto& param = ir;  // ";
+    checkConstAutoReferenceDecduction(ir);
+    cout << "const auto& param = cir; // ";
+    checkConstAutoReferenceDecduction(cir);
 }
 
 void showTempalateParameterDeduction()
 {
     int i = 10;
-    int& ri = i;
+    int& ir = i;
     const int ci = 10;
-    const int& cri = ci;
+    const int& cir = ci;
 
     cout << "template<typename T>" << endl;
     cout << "void func(T param);" << endl;
@@ -166,18 +166,18 @@ void showTempalateParameterDeduction()
     checkTemplateTypeAndParamType(10);
     cout << "func(ci);  // ";
     checkTemplateTypeAndParamType(ci);
-    cout << "func(ri);  // ";
-    checkTemplateTypeAndParamType(ri);
-    cout << "func(cri); // ";
-    checkTemplateTypeAndParamType(cri);
+    cout << "func(ir);  // ";
+    checkTemplateTypeAndParamType(ir);
+    cout << "func(cir); // ";
+    checkTemplateTypeAndParamType(cir);
 }
 
 void showTempalateReferenceParameterDeduction()
 {
     int i = 10;
-    int& ri = i;
+    int& ir = i;
     const int ci = 10;
-    const int& cri = ci;
+    const int& cir = ci;
 
     cout << "template<typename T>" << endl;
     cout << "void func(T& param);" << endl;
@@ -187,18 +187,18 @@ void showTempalateReferenceParameterDeduction()
     cout << "func(10);  // Compile will failed here, due to cannot assign a RValue to reference" << endl;
     cout << "func(ci);  // ";
     checkTemplateReferenceAndParamType(ci);
-    cout << "func(ri);  // ";
-    checkTemplateReferenceAndParamType(ri);
-    cout << "func(cri); // ";
-    checkTemplateReferenceAndParamType(cri);
+    cout << "func(ir);  // ";
+    checkTemplateReferenceAndParamType(ir);
+    cout << "func(cir); // ";
+    checkTemplateReferenceAndParamType(cir);
 }
 
 void showTempalateConstReferenceParameterDeduction()
 {
     int i = 10;
-    int& ri = i;
+    int& ir = i;
     const int ci = 10;
-    const int& cri = ci;
+    const int& cir = ci;
 
     cout << "template<typename T>" << endl;
     cout << "void func(const T& param);" << endl;
@@ -209,10 +209,10 @@ void showTempalateConstReferenceParameterDeduction()
     checkTemplateConstReferenceAndParamType(10);
     cout << "func(ci);  // ";
     checkTemplateConstReferenceAndParamType(ci);
-    cout << "func(ri);  // ";
-    checkTemplateConstReferenceAndParamType(ri);
-    cout << "func(cri); // ";
-    checkTemplateConstReferenceAndParamType(cri);
+    cout << "func(ir);  // ";
+    checkTemplateConstReferenceAndParamType(ir);
+    cout << "func(cir); // ";
+    checkTemplateConstReferenceAndParamType(cir);
 }
 
 int main(int, char**)
