@@ -140,7 +140,7 @@ void showConstAutoReferenceDecductionResult()
     showInputs();
     cout << "const auto& param = i;   // ";
     checkConstAutoReferenceDecduction(i);
-    cout << "const auto& param = 10;  //";
+    cout << "const auto& param = 10;  // ";
     checkConstAutoReferenceDecduction(10);
     cout << "const auto& param = ci;  // ";
     checkConstAutoReferenceDecduction(ci);
