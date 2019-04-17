@@ -16,8 +16,9 @@ template<typename T>
 void checkForwardingReferenceType(T&& param)
 {
     using boost::typeindex::type_id_with_cvr;
-    cout << "T is " << type_id_with_cvr<T>().pretty_name();
-    cout << "; param's type is: " << type_id_with_cvr<decltype(param)>().pretty_name() << endl;
+    using WrappedClass = typename std::decay_t<T>;
+    cout << "T is " << type_id_with_cvr<WrappedClass>().pretty_name();
+    cout << ";\tparam's type is: " << type_id_with_cvr<decltype(param)>().pretty_name() << endl;
 }
 
 template<typename T>

@@ -38,7 +38,7 @@ void checkTemplateTypeAndParamType(T param)
 {
     using boost::typeindex::type_id_with_cvr;
     cout << "T is " << type_id_with_cvr<T>().pretty_name();
-    cout << "; param's type is: " << type_id_with_cvr<decltype(param)>().pretty_name() << endl;
+    cout << ";\tparam's type is: " << type_id_with_cvr<decltype(param)>().pretty_name() << endl;
 }
 
 template<typename T>
@@ -46,7 +46,7 @@ void checkTemplateReferenceAndParamType(T& param)
 {
     using boost::typeindex::type_id_with_cvr;
     cout << "T is " << type_id_with_cvr<T>().pretty_name();
-    cout << "; param's type is: " << type_id_with_cvr<decltype(param)>().pretty_name() << endl;
+    cout << ";\tparam's type is: " << type_id_with_cvr<decltype(param)>().pretty_name() << endl;
 }
 
 template<typename T>
@@ -54,7 +54,7 @@ void checkTemplateConstReferenceAndParamType(const T& param)
 {
     using boost::typeindex::type_id_with_cvr;
     cout << "T is " << type_id_with_cvr<T>().pretty_name();
-    cout << "; param's type is: " << type_id_with_cvr<decltype(param)>().pretty_name() << endl;
+    cout << ";\tparam's type is: " << type_id_with_cvr<decltype(param)>().pretty_name() << endl;
 }
 
 void showInputs()
