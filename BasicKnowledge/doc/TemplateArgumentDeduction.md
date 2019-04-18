@@ -123,7 +123,7 @@ title: Template Argument Deduction
            boost::typeindex::type_id_with_cvr<T>().pretty_name();
       }
       ```
-   具体可参见[parameter_deduce_demo](https://github.com/MyFreeGit/TemplateStudy/tree/master/BasicKnowledge/parameter_deduce_demo)
+   具体可参见[argument_deduction_demo](https://github.com/MyFreeGit/TemplateStudy/tree/master/BasicKnowledge/argument_deduction_demo)
 
 ---
 # 没有涉及的话题
@@ -155,8 +155,7 @@ title: Template Argument Deduction
       template<typename T, typename... Args>
       shared_ptr<T> make_shared(Args&&... args)
       {
-         using WrappedClass = typename std::decay_t<T>;
-         return shared_ptr<T>(new WrappedClass(std::forward<Args>(args)...));
+         return shared_ptr<T>(new T(std::forward<Args>(args)...));
       }
       ```
       make_shared函数的主要作用就是调用类型T的构造函数，创建一个类型为T的对象，然后创建一个shared_ptr<T>的对象，并指向这   个新创建的对象。
@@ -205,6 +204,7 @@ title: Template Argument Deduction
       C++编译器会根据函数perfectForward的入参类型，推导出param的类型后，调用对应的func函数（一般func函数是overload函数，不然就没有什么意义，不如直接定义参数param的类型和func的函数一致。）
    - 注意不要在对Forward Reference进行std::move操作！
       - 会导致传入func的参数类型混乱
+      - 但对RValue Reference使用std::forward的效果和std::move一致
 
    具体可参见[perfect_forward_demo](https://github.com/MyFreeGit/TemplateStudy/tree/master/BasicKnowledge/perfect_forward_demo)
 
@@ -215,5 +215,10 @@ title: Template Argument Deduction
       - 5gnb的代码中有应用
    - 在实现Factory设计模式时，将Factory函数的入参传递给被创建对象的构造函数
       - std::make_shared
-      - std::make_unique
-      - std::make_tuple
+   - Lambda函数中使用结合decltype使用Perfect Forward
+      ```C++
+      [](auto&& param) { 
+         targetFunc(std::forward<decltype(param)>(param)); 
+      };
+      ```
+
