@@ -192,6 +192,25 @@ title: Template Argument Deduction
          - RValue经过传递，构造函数得到还是RValue
 
 ---
+# Reference Collapse与Perfect Forwarding
+   - 在C++11之前，不允许一个reference引用另一个reference。T&&会引发编译错误。
+   - C++11为实现Perfect Forward和RValue Reference。引入了Reference Collapse规则
+     > T& &   becomes T&   //**T& &是引用另一个reference，而不是RValue Reference**
+     > T& &&  becomes T&
+     > T&& &  becomes T&
+     > T&& && becomes T&&
+   - Reference Collapse规则运用于Forward Reference和Perfect Forwarding的实现中。
+      ```C++
+      template<class T>
+      T&& forward(typename remove_reference<T>::type& param) noexcept
+      {
+        return static_cast<T&&>(param); // 触发Reference Collapse
+      } 
+      ```
+      如T类型为value 或 reference。 forward结果为reference。
+      如果T类型为RValue reference。 forward结果为RValue Reference。
+
+---
 # 配合std::forward使用Forward Reference
    - 使用std::forward 传递Forward Reference
       ```C++

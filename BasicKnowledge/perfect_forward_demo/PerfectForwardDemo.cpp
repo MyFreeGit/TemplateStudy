@@ -16,8 +16,7 @@ template<typename T>
 void checkForwardingReferenceType(T&& param)
 {
     using boost::typeindex::type_id_with_cvr;
-    using WrappedClass = typename std::decay_t<T>;
-    cout << "T is " << type_id_with_cvr<WrappedClass>().pretty_name();
+    cout << "T is " << type_id_with_cvr<T>().pretty_name();
     cout << ";\tparam's type is: " << type_id_with_cvr<decltype(param)>().pretty_name() << endl;
 }
 
@@ -76,8 +75,27 @@ void demoPerfectForward()
     perfectForward(cir);
 }
 
+void referenceCollapseDemo()
+{
+    using boost::typeindex::type_id_with_cvr;
+    typedef int&& IRR;
+    typedef int&  IR;
+
+    typedef IR& IR_AMP;        // T& & collapse to:     T&
+    typedef IRR& IRR_AMP;      // T&& & collapse to:    T&
+    typedef IR&& IR_AMP_AMP;   // T& && collapse to:    T&
+    typedef IRR&& IRR_AMP_AMP; // int&& && collapse to: T&&
+
+    cout << "int& &   collapse to: " << type_id_with_cvr<IR_AMP>().pretty_name() << endl;
+    cout << "int&& &  collapse to: " << type_id_with_cvr<IRR_AMP>().pretty_name() << endl;
+    cout << "int& &&  collapse to  " << type_id_with_cvr<IR_AMP_AMP>().pretty_name() << endl;
+    cout << "int&& && collapse to: " << type_id_with_cvr<IRR_AMP_AMP>().pretty_name() << endl;
+    cout << endl;
+}
+
 int main(int, char**)
 {
+    referenceCollapseDemo();
     showInputs();
     cout << endl;
     showForwardingReferenceType();
