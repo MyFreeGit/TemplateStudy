@@ -193,13 +193,14 @@ title: Template Argument Deduction
 
 ---
 # Reference Collapse与Perfect Forwarding
-   - 在C++11之前，不允许一个reference引用另一个reference。T&&会引发编译错误。
-   - C++11为实现Perfect Forward和RValue Reference。引入了Reference Collapse规则
-     > T& &   becomes T&   //**T& &是引用另一个reference，而不是RValue Reference**
-     > T& &&  becomes T&
-     > T&& &  becomes T&
-     > T&& && becomes T&&
-   - Reference Collapse规则运用于Forward Reference和Perfect Forwarding的实现中。
+   - C++11为实现Perfect Forward和RValue Reference。引入了Reference Collapse规则 **该规则仅用于类型推导，而不能用于变量声明**
+      ```
+      T& & => T& // typedef int& IR; typedef IR& IR_R; IR_R类型为int&
+      T& && => T& // typedef IR&& IR_RR; IR_RR类型为int&
+      T&& & => T& // typdef int&& IRR; typedef IRR& IRR_R; IRR_R类型为int&
+      T&& && => T&& // typedef IRR&& IRR_RR类型为int&&
+      ```
+   - Reference Collapse规则运用于Perfect Forwarding的实现中。
       ```C++
       template<class T>
       T&& forward(typename remove_reference<T>::type& param) noexcept
